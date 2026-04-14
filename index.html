@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bellingham Aviation Services — KBLI FBO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sky: #0a1628;
+      --sky-mid: #0d2044;
+      --horizon: #1a3a6b;
+      --accent: #e8a020;
+      --accent-light: #f5c042;
+      --white: #f0eeea;
+      --muted: #8a9ab5;
+      --steel: #1e2d47;
+      --glass: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.09);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--sky);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem;
+      height: 68px;
+      background: rgba(10,22,40,0.85);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--white); }
+    .nav-links {
+      display: flex; gap: 2rem; list-style: none;
+    }
+    .nav-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-cta {
+      background: var(--accent);
+      color: var(--sky) !important;
+      padding: 0.45rem 1.1rem;
+      font-weight: 700 !important;
+      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+    }
+    .nav-cta:hover { background: var(--accent-light); color: var(--sky) !important; }
+    .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
+    .hamburger span { width: 24px; height: 2px; background: var(--white); display: block; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 6rem 2.5rem 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, #1a3a6b44 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, #e8a02011 0%, transparent 60%),
+        linear-gradient(160deg, #0a1628 0%, #0d2044 50%, #0a1628 100%);
+    }
+    /* runway lines */
+    .hero-bg::before {
+      content: '';
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 4px; height: 55%;
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--accent) 0px, var(--accent) 40px,
+        transparent 40px, transparent 80px
+      );
+      opacity: 0.25;
+    }
+    /* grid overlay */
+    .hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      position: relative;
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 40px; height: 1px;
+      background: var(--accent);
+    }
+    .hero-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 10vw, 9rem);
+      line-height: 0.92;
+      letter-spacing: 0.02em;
+      position: relative;
+      max-width: 900px;
+    }
+    .hero-headline em {
+      font-style: normal;
+      color: var(--accent);
+      display: block;
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin: 2rem 0 3rem;
+      position: relative;
+    }
+    .hero-actions {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      position: relative;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--sky);
+      padding: 1rem 2.2rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      transition: background 0.2s, transform 0.15s;
+      display: inline-block;
+    }
+    .btn-primary:hover { background: var(--accent-light); transform: translateY(-2px); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--white);
+      padding: 1rem 2.2rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--glass-border);
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* hero stats strip */
+    .hero-stats {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--glass-border);
+    }
+    .stat {
+      padding: 1.4rem 2rem;
+      border-right: 1px solid var(--glass-border);
+      background: rgba(10,22,40,0.7);
+      backdrop-filter: blur(10px);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ── FUEL TICKER ── */
+    .fuel-ticker {
+      background: var(--steel);
+      border-top: 2px solid var(--accent);
+      padding: 0;
+      overflow: hidden;
+    }
+    .ticker-inner {
+      display: flex; align-items: stretch;
+    }
+    .ticker-label {
+      background: var(--accent);
+      color: var(--sky);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.9rem 1.5rem;
+      white-space: nowrap;
+      display: flex; align-items: center;
+      flex-shrink: 0;
+    }
+    .ticker-items {
+      display: flex; gap: 0; flex: 1;
+    }
+    .ticker-item {
+      padding: 0.9rem 2.5rem;
+      border-right: 1px solid var(--glass-border);
+      display: flex; flex-direction: column; gap: 0.15rem;
+    }
+    .ticker-item-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .ticker-item-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    .ticker-note {
+      font-size: 0.6rem;
+      color: var(--muted);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center;
+      font-style: italic;
+    }
+
+    /* ── SECTION BASE ── */
+    section { padding: 6rem 2.5rem; }
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .section-label::before {
+      content: ''; width: 30px; height: 1px; background: var(--accent);
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      line-height: 1;
+      letter-spacing: 0.02em;
+      max-width: 700px;
+    }
+    .section-title span { color: var(--accent); }
+
+    /* ── ABOUT / WHY ── */
+    #about {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+    .about-body p {
+      color: var(--muted);
+      line-height: 1.85;
+      margin-top: 1.5rem;
+      font-size: 1.05rem;
+    }
+    .about-body p strong { color: var(--white); font-weight: 500; }
+    .about-coords {
+      margin-top: 2.5rem;
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+    .coord-row {
+      display: flex; gap: 1rem; align-items: baseline;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+    }
+    .coord-key { color: var(--accent); width: 80px; }
+    .coord-val { color: var(--muted); }
+    .about-visual {
+      position: relative;
+    }
+    .about-card {
+      background: var(--steel);
+      border: 1px solid var(--glass-border);
+      padding: 2.5rem;
+      position: relative;
+    }
+    .about-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 50px; height: 3px;
+      background: var(--accent);
+    }
+    .map-placeholder {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: linear-gradient(135deg, var(--sky-mid) 0%, var(--horizon) 100%);
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--glass-border);
+      position: relative;
+      overflow: hidden;
+    }
+    .map-placeholder::after {
+      content: 'KBLI';
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5rem;
+      color: rgba(232,160,32,0.12);
+      letter-spacing: 0.2em;
+    }
+    /* compass rose */
+    .map-dot {
+      position: absolute;
+      width: 12px; height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 0 8px rgba(232,160,32,0.15), 0 0 0 20px rgba(232,160,32,0.06);
+    }
+    .distances {
+      margin-top: 1.5rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    .dist-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--glass-border);
+      padding: 1rem;
+    }
+    .dist-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      color: var(--accent);
+    }
+    .dist-to { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── SERVICES GRID ── */
+    #services { background: var(--sky-mid); }
+    .services-intro {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 3.5rem; flex-wrap: wrap; gap: 2rem;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1px;
+      border: 1px solid var(--glass-border);
+    }
+    .service-card {
+      background: var(--steel);
+      padding: 2rem;
+      transition: background 0.2s;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+    .service-card:hover { background: #243550; }
+    .service-card:hover::after { transform: scaleX(1); }
+    .service-icon {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .service-name {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--white);
+      margin-bottom: 0.4rem;
+    }
+    .service-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── HOURS ── */
+    #hours {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start;
+    }
+    .hours-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2.5rem;
+    }
+    .hours-table tr {
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .hours-table td {
+      padding: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .hours-table td:first-child {
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      width: 55%;
+    }
+    .hours-table td:last-child {
+      color: var(--white);
+      text-align: right;
+      font-weight: 500;
+    }
+    .hours-table .open { color: var(--accent); }
+    .contact-block { margin-top: 2.5rem; }
+    .contact-row {
+      display: flex; align-items: flex-start; gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .contact-icon {
+      width: 36px; height: 36px;
+      background: var(--steel);
+      border: 1px solid var(--glass-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .contact-label { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Space Mono', monospace; }
+    .contact-value { font-size: 0.95rem; color: var(--white); margin-top: 0.2rem; }
+    .contact-value a { color: var(--accent); text-decoration: none; }
+    .contact-value a:hover { text-decoration: underline; }
+
+    /* ── CTA ── */
+    #cta {
+      text-align: center;
+      background: var(--steel);
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 7rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    #cta::before {
+      content: 'BAS';
+      position: absolute;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22rem;
+      color: rgba(255,255,255,0.02);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    #cta .section-label { justify-content: center; }
+    #cta .section-label::before { display: none; }
+    #cta .section-title { margin: 0 auto 1.5rem; text-align: center; max-width: 600px; }
+    #cta p { color: var(--muted); max-width: 460px; margin: 0 auto 2.5rem; line-height: 1.7; }
+    #cta .hero-actions { justify-content: center; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #06101e;
+      padding: 3rem 2.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1.5rem;
+      border-top: 1px solid var(--glass-border);
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .footer-logo span { color: var(--muted); }
+    .footer-copy {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    .footer-nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .footer-nav a {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-nav a:hover { color: var(--accent); }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MOBILE NAV ── */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 68px; left: 0; right: 0; bottom: 0;
+      background: rgba(10,22,40,0.97);
+      backdrop-filter: blur(20px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      z-index: 99;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      letter-spacing: 0.1em;
+      color: var(--white);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .mobile-menu a:hover { color: var(--accent); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      #about, #hours { grid-template-columns: 1fr; gap: 3rem; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(2) { border-right: none; }
+    }
+    @media (max-width: 600px) {
+      section { padding: 4rem 1.5rem; }
+      nav { padding: 0 1.5rem; }
+      .hero-stats { grid-template-columns: 1fr 1fr; }
+      .fuel-ticker .ticker-items { flex-direction: column; }
+      .ticker-item { border-right: none; border-bottom: 1px solid var(--glass-border); }
+      #hero { padding: 6rem 1.5rem 5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">BAS<span> / KBLI</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#hours">Hours & Contact</a></li>
+    <li><a href="#cta" class="nav-cta">Reservations</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#about" onclick="toggleMenu()">About</a>
+  <a href="#services" onclick="toggleMenu()">Services</a>
+  <a href="#hours" onclick="toggleMenu()">Hours & Contact</a>
+  <a href="#cta" onclick="toggleMenu()">Reservations</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-eyebrow">Bellingham International Airport — KBLI</div>
+  <h1 class="hero-headline">
+    Your Gateway<br>to the<br><em>Pacific Northwest</em>
+  </h1>
+  <p class="hero-sub">Full-service FBO at KBLI — the most convenient Port of Entry in the Northwest. 50 miles from Vancouver, 90 from Seattle, and zero of the big-airport hassle.</p>
+  <div class="hero-actions">
+    <a href="#cta" class="btn-primary">Request Reservation</a>
+    <a href="tel:+3606767624" class="btn-ghost">☎ 360 676 7624</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-val">2004</div><div class="stat-label">Serving KBLI Since</div></div>
+    <div class="stat"><div class="stat-val">24HR</div><div class="stat-label">Avgas Self-Serve</div></div>
+    <div class="stat"><div class="stat-val">&lt;50mi</div><div class="stat-label">To Vancouver BC</div></div>
+    <div class="stat"><div class="stat-val">POE</div><div class="stat-label">Port of Entry Airport</div></div>
+  </div>
+</section>
+
+<!-- FUEL TICKER -->
+<div class="fuel-ticker">
+  <div class="ticker-inner">
+    <div class="ticker-label">⛽ Live Fuel Prices</div>
+    <div class="ticker-items">
+      <div class="ticker-item">
+        <span class="ticker-item-name">Jet A</span>
+        <span class="ticker-item-price">$7.43/gal</span>
+      </div>
+      <div class="ticker-item">
+        <span class="ticker-item-name">Avgas 100LL</span>
+        <span class="ticker-item-price">$7.06/gal</span>
+      </div>
+      <div class="ticker-item">
+        <span class="ticker-item-name">Avgas (Self-Serve)</span>
+        <span class="ticker-item-price">$6.68/gal</span>
+      </div>
+    </div>
+    <div class="ticker-note">Effective March 11, 2026 · Subject to market volatility · Contract fuel discounts available</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-body fade-up">
+    <div class="section-label">Who We Are</div>
+    <h2 class="section-title">Northwest's Premier <span>FBO</span></h2>
+    <p>Bellingham Aviation Services has been the <strong>full-service FBO at Bellingham International Airport</strong> since January 1, 2004. We deliver superior service with warm, personalized attention — the kind you simply won't find at larger metro airports.</p>
+    <p>Whether you're transiting to <strong>Alaska and the Pacific Rim</strong>, hopping across the border to Vancouver, or exploring the beauty of the San Juan Islands, KBLI is your ideal base of operations.</p>
+    <div class="about-coords">
+      <div class="coord-row"><span class="coord-key">ICAO</span><span class="coord-val">KBLI</span></div>
+      <div class="coord-row"><span class="coord-key">UNICOM</span><span class="coord-val">122.95</span></div>
+      <div class="coord-row"><span class="coord-key">ASOS</span><span class="coord-val">ASRI 131.3</span></div>
+      <div class="coord-row"><span class="coord-key">CUSTOMS</span><span class="coord-val">360 734 5463</span></div>
+      <div class="coord-row"><span class="coord-key">ICBM</span><span class="coord-val">48.7928° N, 122.5375° W</span></div>
+    </div>
+  </div>
+  <div class="about-visual fade-up">
+    <div class="about-card">
+      <div class="map-placeholder">
+        <div class="map-dot"></div>
+      </div>
+      <div class="distances">
+        <div class="dist-item">
+          <div class="dist-num">&lt;50</div>
+          <div class="dist-to">Miles to Vancouver BC (CYVR)</div>
+        </div>
+        <div class="dist-item">
+          <div class="dist-num">90</div>
+          <div class="dist-to">Miles to Seattle (SEA)</div>
+        </div>
+        <div class="dist-item">
+          <div class="dist-num">POE</div>
+          <div class="dist-to">Port of Entry — On-Field Customs</div>
+        </div>
+        <div class="dist-item">
+          <div class="dist-num">AK</div>
+          <div class="dist-to">Convenient Hub for Alaska Transit</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="services-intro fade-up">
+    <div>
+      <div class="section-label">What We Offer</div>
+      <h2 class="section-title">Full-Service <span>FBO</span></h2>
+    </div>
+    <a href="#cta" class="btn-ghost">Request Services →</a>
+  </div>
+  <div class="services-grid">
+    <div class="service-card fade-up">
+      <span class="service-icon">⛽</span>
+      <div class="service-name">Fuel Services</div>
+      <div class="service-desc">Jet A, 100LL Avgas, and 24-hour self-serve Avgas. World Fuel, COLT, MultiService, AvCard, and DLA contracts accepted.</div>
+    </div>
+    <div class="service-card fade-up">
+      <span class="service-icon">🛩</span>
+      <div class="service-name">Hangar & Parking</div>
+      <div class="service-desc">Heated hangar space and aircraft parking available. Quick turnarounds prioritized for transient aircraft.</div>
+    </div>
+    <div class="service-card fade-up">
+      <span class="service-icon">🧊</span>
+      <div class="service-name">De-Icing</div>
+      <div class="service-desc">Aircraft de-icing services available as needed for safe Pacific Northwest winter operations.</div>
+    </div>
+    <div class="service-card fade-up">
+      <span class="service-icon">🍽</span>
+      <div class="service-name">Concierge</div>
+      <div class="service-desc">Catering, rental cars, and hotel arrangements. Courtesy crew car, coffee, and ice always available.</div>
+    </div>
+    <div class="service-card fade-up">
+      <span class="service-icon">🔧</span>
+      <div class="service-name">Maintenance</div>
+      <div class="service-desc">On-call maintenance with avionics sales and service. Ground power available for ramp operations.</div>
+    </div>
+    <div class="service-card fade-up">
+      <span class="service-icon">🛂</span>
+      <div class="service-name">Customs</div>
+      <div class="service-desc">On-field customs service — KBLI is a designated Port of Entry airport for international arrivals.</div>
+    </div>
+    <div class="service-card fade-up">
+      <span class="service-icon">✈️</span>
+      <div class="service-name">Charter Brokerage</div>
+      <div class="service-desc">Charter brokerage services to connect you with the right aircraft for your mission.</div>
+    </div>
+    <div class="service-card fade-up">
+      <span class="service-icon">🏢</span>
+      <div class="service-name">Crew & Passenger Facilities</div>
+      <div class="service-desc">Pilot lounge, passenger lounge, conference room, wireless internet, lav service, and oxygen.</div>
+    </div>
+    <div class="service-card fade-up">
+      <span class="service-icon">🎓</span>
+      <div class="service-name">Flight School</div>
+      <div class="service-desc">Bellingham's local flight training programs through our Bellingham Jet Center flight school.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOURS & CONTACT -->
+<section id="hours">
+  <div class="fade-up">
+    <div class="section-label">Operations</div>
+    <h2 class="section-title">Hours &amp; <span>Info</span></h2>
+    <table class="hours-table">
+      <tr>
+        <td>Jet Fueling — Weekdays</td>
+        <td class="open">0600 – 2130</td>
+      </tr>
+      <tr>
+        <td>Jet Fueling — Weekends</td>
+        <td class="open">0600 – 1900</td>
+      </tr>
+      <tr>
+        <td>By Appointment</td>
+        <td>Available</td>
+      </tr>
+      <tr>
+        <td>Avgas Self-Serve</td>
+        <td class="open">24 Hours</td>
+      </tr>
+      <tr>
+        <td>BAS Office</td>
+        <td>0800 – 1700</td>
+      </tr>
+      <tr>
+        <td>Payment Methods</td>
+        <td>Visa, MC, Amex, Discover</td>
+      </tr>
+    </table>
+  </div>
+  <div class="fade-up">
+    <div class="section-label">Contact</div>
+    <h2 class="section-title">Get in <span>Touch</span></h2>
+    <div class="contact-block">
+      <div class="contact-row">
+        <div class="contact-icon">📞</div>
+        <div>
+          <div class="contact-label">Main Line</div>
+          <div class="contact-value"><a href="tel:+3606767624">360 676 7624</a></div>
+        </div>
+      </div>
+      <div class="contact-row">
+        <div class="contact-icon">📠</div>
+        <div>
+          <div class="contact-label">Fax</div>
+          <div class="contact-value">360 676 8878</div>
+        </div>
+      </div>
+      <div class="contact-row">
+        <div class="contact-icon">✉️</div>
+        <div>
+          <div class="contact-label">Email</div>
+          <div class="contact-value"><a href="mailto:info@bli-jet.com">info@bli-jet.com</a></div>
+        </div>
+      </div>
+      <div class="contact-row">
+        <div class="contact-icon">🛂</div>
+        <div>
+          <div class="contact-label">Customs</div>
+          <div class="contact-value">360 734 5463</div>
+        </div>
+      </div>
+      <div class="contact-row">
+        <div class="contact-icon">📍</div>
+        <div>
+          <div class="contact-label">Location</div>
+          <div class="contact-value">Bellingham International Airport<br>4255 Mitchell Way, Bellingham, WA 98226</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="section-label">Ready to Fly?</div>
+  <h2 class="section-title">Plan Your Visit to <span>KBLI</span></h2>
+  <p>Contact our team for reservations, fuel requests, hangar availability, or any other FBO services. We'll have everything ready before you touch down.</p>
+  <div class="hero-actions">
+    <a href="mailto:info@bli-jet.com" class="btn-primary">Email Us</a>
+    <a href="tel:+3606767624" class="btn-ghost">☎ 360 676 7624</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">BAS <span>/ Bellingham Aviation Services</span></a>
+  <nav class="footer-nav">
+    <a href="#about">About</a>
+    <a href="#services">Services</a>
+    <a href="#hours">Hours</a>
+    <a href="mailto:info@bli-jet.com">Contact</a>
+  </nav>
+  <div class="footer-copy">© 2024 Bellingham Aviation Services. KBLI FBO. All rights reserved.</div>
+</footer>
+
+<script>
+  // Intersection Observer for fade-up animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, 80 * [...entry.target.parentElement.querySelectorAll('.fade-up')].indexOf(entry.target));
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // Mobile menu
+  function toggleMenu() {
+    document.getElementById('mobile-menu').classList.toggle('open');
+  }
+</script>
+</body>
+</html>
