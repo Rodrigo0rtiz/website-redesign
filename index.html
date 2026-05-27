@@ -742,6 +742,21 @@ function showToast(msg) {
   setTimeout(() => el.classList.remove('show'), 3000);
 }
 
+
+// ── GLOBAL FORMAT HELPERS ──
+function fmtNum(v) {
+  const n = Number(v) || 0;
+  return Math.round(n).toLocaleString();
+}
+function fmtMoney(v) {
+  const n = Number(v) || 0;
+  return (n >= 0 ? '$' : '-$') + Math.abs(Math.round(n)).toLocaleString();
+}
+function numColor(v) {
+  const n = Number(v) || 0;
+  return n > 0 ? 'green' : n < 0 ? 'red' : 'amber';
+}
+
 // ── DATASET CONSTANTS ──
 const DS = {
   avgYield:     { 'Gala':40657,'Fuji':39534,'Honeycrisp':34100,'Red Delicious':38313,'Granny Smith':40660,'Cosmic Crisp':41729 },
@@ -1327,8 +1342,8 @@ window.addEventListener('load', () => {
         <div class="report-section-title">Farm Info</div>
         <div class="report-grid">
           <div class="report-field"><label>Farm name</label><input id="r-farm-name" value="My Farm"></div>
-          <div class="report-field"><label>County</label><select id="r-county" oninput="runReportDSS()"><option>Yakima</option><option>Chelan</option><option>Douglas</option><option>Grant</option><option>Okanogan</option><option>Kittitas</option><option>Benton</option><option>Adams</option><option>Franklin</option></select></div>
-          <div class="report-field"><label>Apple variety</label><select id="r-variety" oninput="runReportDSS()"><option>Gala</option><option>Fuji</option><option selected>Honeycrisp</option><option>Red Delicious</option><option>Granny Smith</option><option>Cosmic Crisp</option></select></div>
+          <div class="report-field"><label>County</label><select id="r-county" onchange="runReportDSS()"><option>Yakima</option><option>Chelan</option><option>Douglas</option><option>Grant</option><option>Okanogan</option><option>Kittitas</option><option>Benton</option><option>Adams</option><option>Franklin</option></select></div>
+          <div class="report-field"><label>Apple variety</label><select id="r-variety" onchange="runReportDSS()"><option>Gala</option><option>Fuji</option><option selected>Honeycrisp</option><option>Red Delicious</option><option>Granny Smith</option><option>Cosmic Crisp</option></select></div>
         </div>
       </div>
       <div class="report-section">
@@ -1342,9 +1357,9 @@ window.addEventListener('load', () => {
       <div class="report-section">
         <div class="report-section-title">Field Conditions</div>
         <div class="report-grid">
-          <div class="report-field"><label>Irrigation type</label><select id="r-irr" oninput="runReportDSS()"><option value="drip">Drip Irrigation</option><option value="micro-sprinkler">Micro-Sprinkler</option><option value="overhead">Overhead Sprinkler</option><option value="none">No Irrigation</option></select></div>
+          <div class="report-field"><label>Irrigation type</label><select id="r-irr" onchange="runReportDSS()"><option value="drip">Drip Irrigation</option><option value="micro-sprinkler">Micro-Sprinkler</option><option value="overhead">Overhead Sprinkler</option><option value="none">No Irrigation</option></select></div>
           <div class="report-field"><label>Soil quality score (1–10)</label><input type="number" id="r-soil" value="7" min="1" max="10" oninput="runReportDSS()"></div>
-          <div class="report-field"><label>Farm size</label><select id="r-size" oninput="runReportDSS()"><option value="small">Small (&lt;10 acres)</option><option value="medium" selected>Medium (10–99 acres)</option><option value="large">Large (100–499 acres)</option><option value="xlarge">Enterprise (500+ acres)</option></select></div>
+          <div class="report-field"><label>Farm size</label><select id="r-size" onchange="runReportDSS()"><option value="small">Small (&lt;10 acres)</option><option value="medium" selected>Medium (10–99 acres)</option><option value="large">Large (100–499 acres)</option><option value="xlarge">Enterprise (500+ acres)</option></select></div>
         </div>
       </div>
       <div class="report-section">
