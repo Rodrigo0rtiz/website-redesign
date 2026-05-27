@@ -1981,5 +1981,228 @@ function esc(s) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
+
+
+<script>
+/* ────────────────────────────────────────────────
+   REPORT MODAL FINAL FIX
+   This block intentionally overrides the report functions after the full
+   page has loaded so the modal, DSS preview, and Save Report button work
+   even if an earlier script stops or the standalone prediction page changes.
+──────────────────────────────────────────────── */
+(function(){
+  const DATA = {
+    avgYield: {'Gala':40657,'Fuji':39534,'Honeycrisp':34100,'Red Delicious':38313,'Granny Smith':40660,'Cosmic Crisp':41729},
+    pricePerLb: {'Gala':0.32,'Fuji':0.28,'Honeycrisp':0.75,'Red Delicious':0.18,'Granny Smith':0.24,'Cosmic Crisp':0.58},
+    irrMult: {drip:1.00,'micro-sprinkler':0.95,overhead:0.90,none:0.71},
+    countyMult: {Yakima:0.98,Chelan:1.02,Douglas:1.00,Grant:1.01,Okanogan:1.01,Kittitas:0.99,Benton:1.02,Adams:0.98,Franklin:0.97},
+    sizeMult: {small:0.88,medium:1.04,large:1.07,xlarge:1.12},
+    costPerAcre: {'Gala':1740,'Fuji':1800,'Honeycrisp':2200,'Red Delicious':1650,'Granny Smith':1900,'Cosmic Crisp':2100}
+  };
+
+  window.__gotAppleReports = window.__gotAppleReports || [];
+  window.__lastReportDSS = null;
+
+  function byId(id){ return document.getElementById(id); }
+  function val(id, fallback){ const el = byId(id); return el ? el.value : fallback; }
+  function setVal(id, value){ const el = byId(id); if(el) el.value = value; }
+  function nval(id, fallback){
+    const num = parseFloat(val(id, fallback));
+    return Number.isFinite(num) ? num : fallback;
+  }
+  function fmtNum(v){ return Math.round(Number(v) || 0).toLocaleString(); }
+  function fmtMoney(v){
+    const n = Math.round(Number(v) || 0);
+    return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString();
+  }
+  function soilMult(score){ return 0.87 + score * 0.026; }
+  function cleanAcres(v){ return Math.max(1, Math.min(5000, Number(v) || 1)); }
+  function cleanYield(v){ return Math.max(0, Math.min(150000, Number(v) || 0)); }
+  function cleanPrice(v, variety){
+    const fallback = DATA.pricePerLb[variety] || 0.35;
+    return Math.max(0.01, Math.min(5, Number(v) || fallback));
+  }
+
+  window.calcReportDSS = function(){
+    const variety = val('r-variety','Honeycrisp');
+    const county = val('r-county','Yakima');
+    const acres = cleanAcres(nval('r-acres',50));
+    const currentYield = cleanYield(nval('r-yield',0));
+    const price = cleanPrice(nval('r-price', DATA.pricePerLb[variety] || 0.35), variety);
+    const irr = val('r-irr','drip');
+    const soil = Math.max(1, Math.min(10, nval('r-soil',7)));
+    const size = val('r-size','medium');
+
+    const baseYield = DATA.avgYield[variety] || 38000;
+    const predictedYield = Math.round(baseYield * (DATA.irrMult[irr] || 1) * (DATA.countyMult[county] || 1) * (DATA.sizeMult[size] || 1) * soilMult(soil));
+    const usedYield = currentYield || predictedYield;
+    const totalLbs = Math.round(usedYield * acres);
+    const revenue = Math.round(totalLbs * price);
+    const cost = Math.round((DATA.costPerAcre[variety] || 1850) * acres * (irr === 'drip' ? 1.03 : irr === 'none' ? 0.86 : 1));
+    const profit = revenue - cost;
+    const datasetYield = DATA.avgYield[variety] || 38000;
+    const yieldDelta = Math.round(((usedYield - datasetYield) / datasetYield) * 100);
+    const droughtRisk = irr === 'none' || soil <= 4 || county === 'Adams' || county === 'Franklin';
+
+    return {variety, county, acres, currentYield, price, irr, soil, size, predictedYield, usedYield, totalLbs, revenue, cost, profit, datasetYield, yieldDelta, droughtRisk};
+  };
+
+  window.runReportDSS = function(){
+    const box = byId('reportDSS');
+    if(!box) return;
+    const d = window.calcReportDSS();
+    window.__lastReportDSS = d;
+
+    const status = d.profit >= 0 && !d.droughtRisk ? 'good' : d.profit >= 0 ? 'caution' : 'urgent';
+    const badgeClass = status === 'good' ? 'badge-green' : status === 'caution' ? 'badge-amber' : 'badge-red';
+    const badgeText = status === 'good' ? 'Strong' : status === 'caution' ? 'Watch' : 'Action needed';
+    const profitText = d.profit >= 0 ? `Projected profit of ${fmtMoney(d.profit)}` : `Projected loss of ${fmtMoney(d.profit)}`;
+    const riskText = d.droughtRisk ? 'Water-stress risk is flagged based on irrigation, soil score, or county.' : 'No major drought risk is flagged from these inputs.';
+    const recommendation = d.profit < 0
+      ? 'Review costs, market pricing, and whether this block should stay in the current variety.'
+      : (d.irr !== 'drip' ? 'Consider drip irrigation or better water monitoring to improve yield stability and margins.' : 'Maintain drip performance and keep monitoring thinning, water timing, and storage quality.');
+
+    box.innerHTML = `
+      <div class="report-dss-head">
+        <div>
+          <div class="report-dss-title">${d.variety} DSS prediction</div>
+          <div class="report-dss-summary">${profitText}. Entered yield is ${d.yieldDelta >= 0 ? '+' : ''}${d.yieldDelta}% vs. the dataset average for ${d.variety}.</div>
+        </div>
+        <span class="badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div class="report-dss-metrics">
+        <div class="report-metric"><div class="report-metric-value">${fmtNum(d.predictedYield)}</div><div class="report-metric-label">Predicted lbs/ac</div></div>
+        <div class="report-metric"><div class="report-metric-value">${fmtNum(d.totalLbs)}</div><div class="report-metric-label">Total lbs</div></div>
+        <div class="report-metric"><div class="report-metric-value">${fmtMoney(d.revenue)}</div><div class="report-metric-label">Revenue</div></div>
+        <div class="report-metric"><div class="report-metric-value">${fmtMoney(d.profit)}</div><div class="report-metric-label">Est. profit</div></div>
+      </div>
+      <div class="report-dss-list">
+        <div class="report-dss-card ${d.droughtRisk ? 'caution' : 'good'}"><strong>Risk flag:</strong> ${riskText}</div>
+        <div class="report-dss-card ${d.profit < 0 ? 'urgent' : 'good'}"><strong>Recommendation:</strong> ${recommendation}</div>
+      </div>`;
+  };
+
+  window.openReportModal = function(){
+    const overlay = byId('reportOverlay');
+    if(overlay) overlay.classList.add('open');
+    setTimeout(window.runReportDSS, 0);
+  };
+
+  window.closeReportModal = function(){
+    const overlay = byId('reportOverlay');
+    if(overlay) overlay.classList.remove('open');
+  };
+
+  window.renderFarmPopupItems = function(){
+    const wrap = byId('farmPopupItems');
+    if(!wrap) return;
+    const reports = window.__gotAppleReports;
+    if(!reports.length){
+      wrap.innerHTML = '<div class="saved-empty">No saved reports yet. Use + New Farm Report to create one.</div>';
+      return;
+    }
+    wrap.innerHTML = reports.map((r,i)=>`
+      <div class="saved-item" onclick="loadReport(${i})">
+        <div class="saved-item-title">${r.farmName} — ${r.variety}</div>
+        <div class="saved-item-sub">${r.date} · ${r.county} · ${fmtNum(r.usedYield)} lbs/ac · ${fmtMoney(r.profit)} est. profit</div>
+      </div>`).join('');
+  };
+
+  window.openFarmPopup = function(){
+    window.renderFarmPopupItems();
+    const overlay = byId('farmPopupOverlay');
+    if(overlay) overlay.classList.add('open');
+  };
+
+  window.closeFarmPopup = function(){
+    const overlay = byId('farmPopupOverlay');
+    if(overlay) overlay.classList.remove('open');
+  };
+
+  window.loadReport = function(i){
+    const r = window.__gotAppleReports[i];
+    if(!r) return;
+    setVal('r-farm-name', r.farmName);
+    setVal('r-county', r.county);
+    setVal('r-variety', r.variety);
+    setVal('r-acres', r.acres);
+    setVal('r-yield', r.usedYield);
+    setVal('r-price', r.price);
+    setVal('r-irr', r.irr);
+    setVal('r-soil', r.soil);
+    setVal('r-size', r.size);
+    setVal('r-notes', r.notes || '');
+    setVal('r-action', r.action || '');
+    window.closeFarmPopup();
+    window.openReportModal();
+  };
+
+  function updateDashboardFromReportFixed(r){
+    const kpis = document.querySelectorAll('#page-dashboard .kpi-card');
+    if(kpis[0]){
+      const val = kpis[0].querySelector('.kpi-value');
+      const sub = kpis[0].querySelector('.kpi-sub');
+      if(val) val.textContent = fmtNum(r.usedYield);
+      if(sub) sub.textContent = `lbs/acre · ${r.variety} · saved report`;
+    }
+    if(kpis[1]){
+      const val = kpis[1].querySelector('.kpi-value');
+      const sub = kpis[1].querySelector('.kpi-sub');
+      if(val) val.textContent = r.variety;
+      if(sub) sub.textContent = `Latest report profit: ${fmtMoney(r.profit)}`;
+    }
+    if(kpis[2]){
+      const val = kpis[2].querySelector('.kpi-value');
+      const sub = kpis[2].querySelector('.kpi-sub');
+      if(val) val.textContent = fmtMoney(r.revenue);
+      if(sub) sub.textContent = `${fmtNum(r.totalLbs)} total lbs · ${fmtNum(r.acres)} acres`;
+    }
+    if(kpis[3]){
+      const val = kpis[3].querySelector('.kpi-value');
+      const sub = kpis[3].querySelector('.kpi-sub');
+      if(val) val.textContent = r.droughtRisk ? 'Flagged' : 'Low';
+      if(sub) sub.textContent = r.droughtRisk ? 'Review water stress and irrigation' : 'No major drought flag in report';
+    }
+  }
+
+  window.submitReport = function(){
+    window.runReportDSS();
+    const d = window.__lastReportDSS || window.calcReportDSS();
+    const report = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString(),
+      farmName: val('r-farm-name','My Farm') || 'My Farm',
+      notes: val('r-notes',''),
+      action: val('r-action',''),
+      ...d
+    };
+    window.__gotAppleReports.unshift(report);
+    updateDashboardFromReportFixed(report);
+    window.renderFarmPopupItems();
+    window.closeReportModal();
+    if(typeof showToast === 'function') showToast('✓ Farm report saved and dashboard updated');
+  };
+
+  function wireReportInputs(){
+    ['r-variety','r-county','r-acres','r-yield','r-price','r-irr','r-soil','r-size'].forEach(id => {
+      const el = byId(id);
+      if(el){
+        el.removeEventListener('input', window.runReportDSS);
+        el.removeEventListener('change', window.runReportDSS);
+        el.addEventListener('input', window.runReportDSS);
+        el.addEventListener('change', window.runReportDSS);
+      }
+    });
+    window.renderFarmPopupItems();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', wireReportInputs);
+  } else {
+    wireReportInputs();
+  }
+})();
+</script>
+
 </body>
 </html>
